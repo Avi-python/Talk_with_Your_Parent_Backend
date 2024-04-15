@@ -65,7 +65,7 @@ REST_FRAMEWORK = {
 CORS_ALLOW_CREDENTIALS = True 
 CORS_ORIGIN_ALLOW_ALL = True # 白名單
 # CORS_ORIGIN_WHITELIST = (
-#   '*'
+#   'http://localhost:5173',
 # )
 
 AUTH_USER_MODEL = 'authentication.UserData'

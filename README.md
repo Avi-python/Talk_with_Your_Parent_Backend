@@ -17,7 +17,14 @@
 3. serializers.py
 4. views.py
 
+### streamlizatoin
+- curl test :
+```bash
+curl -X POST http://localhost:8000/app/openai/ -H "Content-Type:application/json" --data-binary "{\"params\": {\"messages\": \"my name is daniel handsome boy\"}}"
+```
+
 # 之後打開方式
 1. copy repo
 2. 建立一個新的 venv ( name: pyvenv )
 3. pip install -r requirements.txt
+

@@ -1,14 +1,17 @@
 from django.shortcuts import render
-from django.http import JsonResponse, response
+from django.http import JsonResponse, response, StreamingHttpResponse
 from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from dotenv import load_dotenv
 from openai import OpenAI
 import os
+import time
 
 load_dotenv()
 client = OpenAI()
+
+OpenAI.api_key = os.getenv("OPENAI_API_KEY")
 
 # Create your views here.
 # 在前面裝一個 decorator，可以檢查請求是否含有 access token。
@@ -22,17 +25,30 @@ def function1(request):
     response['msg'] = 'hello world'
     return JsonResponse(response);
 
-# @permission_classes([IsAuthenticated])
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def openai(request):       
     # messages = json.load(open('./assets/messages.json', 'r'))
-    param = request.data['params']
 
+    print("debug: ", request.data)
+
+    param = request.data['params']
     messages = param["messages"]
 
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+    def event_stream():
+            for line in send_messages(messages=messages):
+                text = line.choices[0].delta.content
+                print(text)
+                if text != None and len(text): 
+                    yield text
 
-    # messages.append({"role": "user", "content": input})
+    response = StreamingHttpResponse(event_stream(), content_type='text/plain')
+    response['Cache-Control']= 'no-cache',
+    response['Access-Control-Allow-Origin'] = '*',
+
+    return response
+
+def send_messages(messages):
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[
@@ -46,16 +62,7 @@ def openai(request):
         top_p=0.7,
         frequency_penalty=2,
         presence_penalty=1,
+        stream=True
     )
 
-    chunks = []
-    for choice in response.choices:
-        chunks.append(choice.message.content)
-    single_object = "".join(chunks)
-
-    return JsonResponse({"content": single_object});
-
-    # 這邊應該要處理一下
-    # time.sleep(1)
-    # messages.append({"role": "assistant", "content": single_object})
-
+    return response
