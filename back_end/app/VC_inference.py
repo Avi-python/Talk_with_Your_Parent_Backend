@@ -15,6 +15,7 @@ import librosa
 import webbrowser
 import soundfile as sf # add
 import wave
+import subprocess
 
 from .VITS_files.text import text_to_sequence, _clean_text
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -33,6 +34,28 @@ language_marks = {
     "Mix": "",
 }
 lang = ['日本語', '简体中文', 'English', 'Mix']
+
+def create_empty_wav(filename, sample_rate=44100, num_channels=1):
+    """
+    Create an empty WAV file with the given filename, duration, sample rate, and number of channels.
+
+    Args:
+    - filename (str): The filename of the WAV file to create.
+    - duration (float): The duration of the empty WAV file in seconds.
+    - sample_rate (int): The sample rate of the WAV file (default is 44100 Hz).
+    - num_channels (int): The number of audio channels (default is 1 for mono).
+
+    Returns:
+    - None
+    """
+    # Open the WAV file for writing
+    with wave.open(filename, 'w') as wf:
+        # Set parameters for the WAV file
+        wf.setnchannels(num_channels)
+        wf.setsampwidth(2)  # 2 bytes per sample for 16-bit audio
+        wf.setframerate(sample_rate)
+        wf.setnframes(int(sample_rate * 0))
+
 def get_text(text, hps, is_symbol):
     text_norm = text_to_sequence(text, hps.symbols, [] if is_symbol else hps.data.text_cleaners)
     if hps.data.add_blank:
@@ -54,8 +77,10 @@ def create_tts_fn(model, hps, speaker_ids):
                                 length_scale=1.0 / speed)[0][0, 0].data.cpu().float().numpy()
         del stn_tst, x_tst, x_tst_lengths, sid
 
-        create_empty_wav("D:\\College_things\\College_Program\\Backend\\ppp" + str(mark) + ".wav") # add
-        filename = os.path.join("D:\\College_things\\College_Program\\Backend\\", "ppp" + str(mark) + ".wav")  # 定義文件名 add
+        path = "D:\\College_things\\College_Program\\Backend\\audio_files\\"
+
+        create_empty_wav(path + f'ppp{str(mark)}.wav') # add
+        filename = os.path.join(path, f'ppp{str(mark)}.wav')  # 定義文件名 add
         sf.write(filename, audio, hps.data.sampling_rate)  # 將音頻寫入文件 add
 
         return "Success", filename # add
@@ -82,31 +107,8 @@ def vc_fn(text, mark):
     filename = tts_fn(text, "PPP", "简体中文", 1, mark)
     print(filename)
 
-def create_empty_wav(filename, sample_rate=44100, num_channels=1):
-    """
-    Create an empty WAV file with the given filename, duration, sample rate, and number of channels.
-
-    Args:
-    - filename (str): The filename of the WAV file to create.
-    - duration (float): The duration of the empty WAV file in seconds.
-    - sample_rate (int): The sample rate of the WAV file (default is 44100 Hz).
-    - num_channels (int): The number of audio channels (default is 1 for mono).
-
-    Returns:
-    - None
-    """
-    # Open the WAV file for writing
-    with wave.open(filename, 'w') as wf:
-        # Set parameters for the WAV file
-        wf.setnchannels(num_channels)
-        wf.setsampwidth(2)  # 2 bytes per sample for 16-bit audio
-        wf.setframerate(sample_rate)
-        wf.setnframes(int(sample_rate * 0))
-
-
-
-
-
+# 先跑一次
+tts_fn("初始化中", "PPP", "简体中文", 1, "_init")
 
 
 

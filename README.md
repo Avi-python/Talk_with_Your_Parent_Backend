@@ -1,8 +1,8 @@
-## 建立基本環境
+## 1. 建立基本環境
 1. pyenv
 2. install Django
 
-## 加入認證 app ( authentication )
+## 2. 加入認證 app ( authentication )
 
 ### 下載相關依賴
 1. pip install cors-header
@@ -23,7 +23,7 @@
 curl -X POST http://localhost:8000/app/openai/ -H "Content-Type:application/json" --data-binary "{\"params\": {\"messages\": \"my name is daniel handsome boy\"}}"
 ```
 
-## 加入 tts ( VITS-fast-fine-tuning )
+## 3. 加入 tts ( VITS-fast-fine-tuning )
 
 按照 VITS reop LOCAL.md 前五步驟
 
@@ -61,6 +61,12 @@ curl -X POST http://localhost:8000/app/openai/ -H "Content-Type:application/json
 1. 載入目錄的問題，會出現 no module name ...
    要全部使用 `from . import`，如果是要載入特定檔案、目錄 `from .<directory>.<file> import ...`
    所也有些它給的檔案 => module.py models.py text 等等裡面有些都要改成這樣的方式
+
+## 4. 前後端的傳送對話文字和語音
+新打一個 api -> audio_file 專門要求語音檔案，所以就會由前端來控制傳送，後段只負責產生語音和等待要求。
+
+### 尚未測試有效功能
+- 如果前端要的時候卻還沒有出現語音，前端請求會延遲最多 5 秒，超過就 404。
 
 # 之後打開方式
 1. copy repo
