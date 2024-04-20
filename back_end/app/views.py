@@ -38,14 +38,13 @@ def openai(request):
             chunks = ""
             mark = 0
             for line in send_messages(messages=messages):
-                text = line.choices[0].delta.content
-                # print("text: ", text)
+                text = line
                 if(text == None or len(text) == 0):
                      continue
                 if(detect_chinese_punctuation(text)):
                      vc_fn(chunks.replace("\n", "").replace(" ", ""), mark)
                      mark += 1
-                     print(chunks + text)
+                     print("DEBUG: text: ", chunks + text)
                      yield (chunks + text)
                      chunks = ""
                      continue

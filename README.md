@@ -23,7 +23,17 @@
 curl -X POST http://localhost:8000/app/openai/ -H "Content-Type:application/json" --data-binary "{\"params\": {\"messages\": \"my name is daniel handsome boy\"}}"
 ```
 
-## 3. 加入 tts ( VITS-fast-fine-tuning )
+## 3. 加入 文本生成 ( langchain )
+
+我原本是使用一般的 OPENAI module，後來改成使用 langchain，因為比較方便可以使用
+  
+- history
+- system msg
+
+1. 載入 langchain module
+2. 另外要使用 `from lanchain_openai import ChatOpenAI`，而非 `from langchain.chat_models import ChatOpenAI` ，因為版本過了（淘汰）。
+
+## 4. 加入 tts ( VITS-fast-fine-tuning )
 
 按照 VITS reop LOCAL.md 前五步驟
 
