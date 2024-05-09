@@ -78,11 +78,6 @@ curl -X POST http://localhost:8000/app/openai/ -H "Content-Type:application/json
 ### 尚未測試有效功能
 - 如果前端要的時候卻還沒有出現語音，前端請求會延遲最多 5 秒，超過就 404。
 
-# 之後打開方式
-1. copy repo
-2. 建立一個新的 venv ( name: pyvenv )
-3. pip install -r requirements.txt
-4. 
 ## 5. 偵測上下文量
 
 自製一個計算 token 的 function，可以在超過一定量的時候刪掉
@@ -95,4 +90,11 @@ curl -X POST http://localhost:8000/app/openai/ -H "Content-Type:application/json
 我會使用登入的使用者來區別不同人，進而創建不同 conversations
 - 發現的 feature
   - 如果使用同一個 chrome 瀏覽器帳號，可能是因為 localstorage 的關係，使用者會相同。
+
+
+# 之後打開方式
+1. copy repo
+2. 建立一個新的 venv ( name: pyvenv )
+3. pip install -r requirements.txt
+4. 
 

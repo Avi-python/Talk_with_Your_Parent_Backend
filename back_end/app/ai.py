@@ -76,7 +76,7 @@ ai_prompt = ChatPromptTemplate.from_messages([
     SystemMessagePromptTemplate.from_template(
         system_prompt
     ),
-    MessagesPlaceholder(variable_name="history"), # TODO 測試看看最多可以容納多少字，相關防備，通知前端開啟新的對話等
+    MessagesPlaceholder(variable_name="history"),
     HumanMessagePromptTemplate.from_template("{input}")
 ])
 

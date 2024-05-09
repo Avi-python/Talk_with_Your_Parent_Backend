@@ -12,7 +12,7 @@ import os
 import time
 import tiktoken
 
-maximum_tokens = 100
+maximum_tokens = int(os.getenv("MAXIMUM_CONVERSATION_TOKENS", 500))
 encoding = tiktoken.get_encoding("cl100k_base") # for gpt-3.5-turbo and gpt-4
 users_conversation_tokens = {}
 # Create your views here.
