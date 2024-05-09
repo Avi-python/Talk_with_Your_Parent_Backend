@@ -1,17 +1,24 @@
 from django.shortcuts import render
 from django.http import JsonResponse, response, StreamingHttpResponse, HttpResponse
 from django.conf import settings
+from authentication.serializers import UserSerializer 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 from .VC_inference import vc_fn
-from .ai import send_messages, detect_chinese_punctuation
+from .ai import send_messages, detect_chinese_punctuation, clear_conversation_memory
 
 import os
 import time
+import tiktoken
 
+maximum_tokens = 100
+encoding = tiktoken.get_encoding("cl100k_base") # for gpt-3.5-turbo and gpt-4
+users_conversation_tokens = {}
 # Create your views here.
 # 在前面裝一個 decorator，可以檢查請求是否含有 access token。
+
+# 維護一個全域變數，用來記錄目前使用者對應已經使用的 tokens 數量。
 
 @api_view(['GET'])
 # @permission_classes([IsAuthenticated])
@@ -29,32 +36,55 @@ def function1(request):
 def openai(request):       
     # messages = json.load(open('./assets/messages.json', 'r'))
 
-    print("debug: ", request.data)
+    serializer = UserSerializer(request.user)
 
     param = request.data['params']
     messages = param["messages"]
 
+    if(users_conversation_tokens.get(serializer.data["id"]) == None):
+        users_conversation_tokens[serializer.data["id"]] = 0
+    users_conversation_tokens[serializer.data["id"]] += len(encoding.encode(messages))
+
     def event_stream():
-            chunks = ""
+            all_chunks = ""
+            chunk = ""
             mark = 0
-            for line in send_messages(messages=messages):
+            for line in send_messages(messages=messages, userId=serializer.data["id"]):
                 text = line
                 if(text == None or len(text) == 0):
                      continue
                 if(detect_chinese_punctuation(text)):
-                     vc_fn(chunks.replace("\n", "").replace(" ", ""), mark)
+                     vc_fn(chunk.replace("\n", "").replace(" ", ""), mark) 
                      mark += 1
-                     print("DEBUG: text: ", chunks + text)
-                     yield (chunks + text)
-                     chunks = ""
+                     print("DEBUG: text: ", chunk + text)
+                     yield (chunk + text)
+                     chunk = ""
                      continue
-                chunks += text
+                chunk += text
+                all_chunks += text
+            users_conversation_tokens[serializer.data["id"]] += len(encoding.encode(all_chunks))
+            print("DEBUG: user: ", serializer.data["id"], "already use", users_conversation_tokens[serializer.data["id"]], "tokens")
+            
 
     response = StreamingHttpResponse(event_stream(), content_type='text/plain')
     response['Cache-Control']= 'no-cache',
     response['Access-Control-Allow-Origin'] = '*',
 
     return response
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def conversation_tokens(request):
+    serializer = UserSerializer(request.user)
+    return JsonResponse({"tokens": users_conversation_tokens[serializer.data["id"]], "isFull" : users_conversation_tokens[serializer.data["id"]] > maximum_tokens}, status=200)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def reset_conversation_tokens(request):
+    serializer = UserSerializer(request.user)
+    clear_conversation_memory(serializer.data["id"])
+    users_conversation_tokens[serializer.data["id"]] = 0
+    return JsonResponse({"msg": "reset conversation tokens success"}, status=200)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

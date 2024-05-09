@@ -23,7 +23,7 @@ OpenAI.api_key = os.getenv("OPENAI_API_KEY")
 # human_message = "問題：{text}"
 
 system_prompt = '''
-請你創建一個腳色，並用這個腳色與我對話，以下是腳色的背景資料:
+請你模仿一個腳色，並用這個腳色與我對話，以下是腳色的背景資料:
 1. 個性特徵
 - 直白
 - 坦誠
@@ -80,18 +80,36 @@ ai_prompt = ChatPromptTemplate.from_messages([
     HumanMessagePromptTemplate.from_template("{input}")
 ])
 
-memory = ConversationBufferMemory(return_messages=True)
+# memory = ConversationBufferMemory(return_messages=True)
 
-model = ChatOpenAI(model="gpt-4", streaming=True, temperature=0) # 預設模型為 "gpt-3.5-turbo"
+model = ChatOpenAI(model="gpt-4", streaming=True, temperature=1.0) # 預設模型為 "gpt-3.5-turbo"
 # ConversationChain 專門使用在對話聊天上
-conversation = ConversationChain(memory=memory,
-                                 prompt=ai_prompt,
-                                 llm=model,
-                                 verbose=True)
 
-def send_messages(messages):
+# conversation = ConversationChain(memory=memory,
+#                                  prompt=ai_prompt,
+#                                  llm=model,
+#                                  verbose=True)
 
-    return conversation.predict(input=messages)
+# 維護一個全域變數，用來記錄不同使用者對應不同的 conversation
+users_conversations = {}
+
+def clear_conversation_memory(userId):
+
+    assert(users_conversations.get(userId) != None, "User not found")
+    
+    users_conversations[userId].memory.clear()
+
+def send_messages(messages, userId):
+
+    if(users_conversations.get(userId) == None):
+        memory = ConversationBufferMemory(return_messages=True)
+        conversation = ConversationChain(memory=memory,
+                                         prompt=ai_prompt,
+                                         llm=model,
+                                         verbose=True)
+        users_conversations[userId] = conversation
+
+    return users_conversations[userId].predict(input=messages)
 
 def detect_chinese_punctuation(text):
     """

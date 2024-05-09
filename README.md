@@ -83,3 +83,8 @@ curl -X POST http://localhost:8000/app/openai/ -H "Content-Type:application/json
 2. 建立一個新的 venv ( name: pyvenv )
 3. pip install -r requirements.txt
 
+## 5. 偵測上下文量
+
+自製一個計算 token 的 function，可以在超過一定量的時候刪掉
+- 雖然 gpt 4 的容忍值可已到 32000 token，但我還是停在 2000 就好，因為還要考慮 system prompt。
+
