@@ -82,9 +82,17 @@ curl -X POST http://localhost:8000/app/openai/ -H "Content-Type:application/json
 1. copy repo
 2. 建立一個新的 venv ( name: pyvenv )
 3. pip install -r requirements.txt
-
+4. 
 ## 5. 偵測上下文量
 
 自製一個計算 token 的 function，可以在超過一定量的時候刪掉
 - 雖然 gpt 4 的容忍值可已到 32000 token，但我還是停在 2000 就好，因為還要考慮 system prompt。
+- 新開 api for 
+  - 計算對應使用者 tokens 數量，並回傳是否超過上限
+  - 清除 memory
+
+### 分開 memory
+我會使用登入的使用者來區別不同人，進而創建不同 conversations
+- 發現的 feature
+  - 如果使用同一個 chrome 瀏覽器帳號，可能是因為 localstorage 的關係，使用者會相同。
 
