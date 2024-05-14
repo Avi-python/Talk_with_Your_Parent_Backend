@@ -82,7 +82,7 @@ ai_prompt = ChatPromptTemplate.from_messages([
 
 # memory = ConversationBufferMemory(return_messages=True)
 
-model = ChatOpenAI(model="gpt-4", streaming=True, temperature=1.0) # 預設模型為 "gpt-3.5-turbo"
+model = ChatOpenAI(model="gpt-4o", streaming=True, temperature=1.0) # 預設模型為 "gpt-3.5-turbo"
 # ConversationChain 專門使用在對話聊天上
 
 # conversation = ConversationChain(memory=memory,
@@ -95,9 +95,8 @@ users_conversations = {}
 
 def clear_conversation_memory(userId):
 
-    assert(users_conversations.get(userId) != None, "User not found")
-    
-    users_conversations[userId].memory.clear()
+    if(users_conversations.get(userId) != None):
+        users_conversations[userId].memory.clear()
 
 def send_messages(messages, userId):
 

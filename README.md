@@ -9,7 +9,6 @@
 2. pip install djangorestframework djangorestframework_simplejwt
 3. 配置 settings
    1. cors-header 要加 'corsheaders.middleware.CorsMiddleware' middleware client 才會給過
-   2. 
 
 ### 編輯文件
 1. urls.py
@@ -91,6 +90,27 @@ curl -X POST http://localhost:8000/app/openai/ -H "Content-Type:application/json
 - 發現的 feature
   - 如果使用同一個 chrome 瀏覽器帳號，可能是因為 localstorage 的關係，使用者會相同。
 
+## 6. 限制聊天人數
+- 使用 users_conversation_tokens.length 以表示當前聊天的人數
+- 使用 timer 去偵測如果一個人待在頁面太久都沒有動，就要將他從 users_conversation_tokens 移出
+- client access openai api 要先去看 users_conversation_tokens 裡面有沒有它
+  - 如果沒有它，並且 users_conversation_tokens.length < 10 就可以聊天，並且新增一個它的 entry。
+  - 如果沒有它，並且 users_conversation_tokens.length >= 10 就必須排隊等待 
+    - 需要維護一個等待佇列
+  - 如果發現有它，那代表重複登入了，block 掉
+    - TODO : 需要顯示警告訊息
+- 要調整 openai api，如果 access 的使用者發現沒有在 users_conversation_tokens 裡面，就要擋下來回報 404，讓使用者刷新頁面重新去等待
+  - 用在
+    - detect 使用者頁面放太久沒有說話
+  - TODO : 在前端 router 那邊需要再 beforeRoute 去檢查 to and from
+    - 如果 to 來自 /Chat，帶表他要進入聊天頁面，因此就需要 access 後端 api 去確認我是否可以排進去
+    - 如果 from 來自 /Chat，帶表他要離開聊天室，因此就需要 access 後端 api 刪掉 entry
+    - 如果是 reload，就讓他重新進入等待頁面
+- 需要再開一個 api 用來 set users_conversation_tokens，當被允許進入的時候要使用這個來設定，以免被 openai api 擋下來。
+
+### bug
+
+- DONE : 當我將 user 從後端踢出 user_conversation_tokens，他還是可以進來，即便有其他人並且連線是滿的，可能是因為沒有刪除完整，也可能會出現使用者已經在聊天室裡面的情況出現。
 
 # 之後打開方式
 1. copy repo
