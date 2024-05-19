@@ -23,7 +23,10 @@ OpenAI.api_key = os.getenv("OPENAI_API_KEY")
 # human_message = "問題：{text}"
 
 system_prompt = '''
-請你模仿一個腳色，並用這個腳色與我對話，以下是腳色的背景資料:
+等一下我會跟你描述一個人物，請你完全模仿他，並且回答我接下來任何問題，回答請控制在 100 字以內，就像在對話一樣。
+'''
+
+role_description = '''
 1. 個性特徵
 - 直白
 - 坦誠
@@ -76,13 +79,15 @@ ai_prompt = ChatPromptTemplate.from_messages([
     SystemMessagePromptTemplate.from_template(
         system_prompt
     ),
+    ("human", "以下是人物的人格特徵" + role_description),
+    ("ai", "收到，我會模仿這個人物的人格與你聊天，並且回答控制在 100 字內，像在平時聊天一樣。"),
     MessagesPlaceholder(variable_name="history"),
     HumanMessagePromptTemplate.from_template("{input}")
 ])
 
 # memory = ConversationBufferMemory(return_messages=True)
 
-model = ChatOpenAI(model="gpt-4", streaming=True, temperature=1.0) # 預設模型為 "gpt-3.5-turbo"
+model = ChatOpenAI(model="gpt-4o", streaming=True, temperature=1.0) # 預設模型為 "gpt-3.5-turbo"
 # ConversationChain 專門使用在對話聊天上
 
 # conversation = ConversationChain(memory=memory,
@@ -123,7 +128,7 @@ def detect_chinese_punctuation(text):
     """
     # Regular expression pattern for Chinese punctuation marks
     # chinese_punctuation_pattern = r'[，。、；：？！“”‘’（）【】《》「」『』【】〔〕﹁﹂〈〉《》〖〗…—～·﹏]'
-    chinese_punctuation_pattern = r'[，。、；：？！]'
+    chinese_punctuation_pattern = r'[，。；：？！]'
     
     # Find all occurrences of Chinese punctuation marks in the text
     chinese_punctuation_marks = re.findall(chinese_punctuation_pattern, text)
