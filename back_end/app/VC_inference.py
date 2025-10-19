@@ -1,7 +1,3 @@
-import sys
-
-# sys.path.append("VITS_files")
-
 import os
 import numpy as np
 import torch
@@ -81,8 +77,8 @@ def create_tts_fn(model, hps, speaker_ids, model_name):
         audio_dir = os.path.join(current_dir, 'audio_files')
         os.makedirs(audio_dir, exist_ok=True)
 
-        create_empty_wav(path + f'ppp{str(mark)}.wav') # add
-        filename = os.path.join(path, f'ppp{str(mark)}.wav')  # 定義文件名 add
+        create_empty_wav(os.path.join(audio_dir, f'{model_name}{str(mark)}.wav')) # add
+        filename = os.path.join(audio_dir, f'{model_name}{str(mark)}.wav')  # 定義文件名 add
         sf.write(filename, audio, hps.data.sampling_rate)  # 將音頻寫入文件 add
 
         return "Success", filename # add
@@ -92,34 +88,24 @@ def create_tts_fn(model, hps, speaker_ids, model_name):
 
 tts_fn = None
 
+
 def load_vc_model(model_name):
     global tts_fn
-
-    hps = utils.get_hparams_from_file("D:/College_things/College_Program/Backend/back_end/app/VITS_files/OUTPUT_MODEL/" + model_name + "/finetune_speaker.json") # get hparams from config file ( finetune_speaker.json )
-config_path = os.path.join(current_dir, 'VITS_files', 'OUTPUT_MODEL', 'finetune_speaker.json')
-model_path = os.path.join(current_dir, 'VITS_files', 'OUTPUT_MODEL', 'G_latest.pth')
-
-hps = utils.get_hparams_from_file(config_path) # get hparams from config file ( finetune_speaker.json )
-
-    net_g = SynthesizerTrn( # 載入模型 
+    config_path = os.path.join(current_dir, 'VITS_files', 'OUTPUT_MODEL', model_name, 'finetune_speaker.json')
+    model_path = os.path.join(current_dir, 'VITS_files', 'OUTPUT_MODEL', model_name, 'G_latest.pth')
+    hps = utils.get_hparams_from_file(config_path) # get hparams from config file ( finetune_speaker.json )
+    net_g = SynthesizerTrn( # 載入模型
         len(hps.symbols),
         hps.data.filter_length // 2 + 1,
         hps.train.segment_size // hps.data.hop_length,
         n_speakers=hps.data.n_speakers,
         **hps.model).to(device)
     _ = net_g.eval()
-
-_ = utils.load_checkpoint(model_path, net_g, None)
-speaker_ids = hps.speakers
-speakers = list(hps.speakers.keys())
-tts_fn = create_tts_fn(net_g, hps, speaker_ids)
-    _ = utils.load_checkpoint("D:/College_things/College_Program/Backend/back_end/app/VITS_files/OUTPUT_MODEL/" + model_name + "/G_latest.pth", net_g, None)
+    _ = utils.load_checkpoint(model_path, net_g, None)
     speaker_ids = hps.speakers
     speakers = list(hps.speakers.keys())
     tts_fn = create_tts_fn(net_g, hps, speaker_ids, model_name)
-
-    # 先跑一次
-    tts_fn("初始化中", model_name, "简体中文", 1, "_init")
+    tts_fn("初始化中", model_name, "简体中文", 1, "_init") # 先跑一次
 
 def vc_fn(text, mark, model_name):
     global tts_fn

@@ -102,9 +102,6 @@ def audio_file(request):
     print("audio_file_model_name: ", model_name)
     
     filename = f'{model_name}{str(mark)}'
-    filepath = f'D:\\College_things\\College_Program\\Backend\\audio_files\\{filename}.wav'
-    print("DEBUG: filepath: ", filepath)
-    filename = f'ppp{str(mark)}'
     audio_dir = os.path.join(current_dir, 'audio_files')
     audio_path = os.path.join(audio_dir, f'{filename}.wav')
     print("DEBUG: audio_path: ", audio_path)
