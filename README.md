@@ -101,5 +101,27 @@ curl -X POST http://localhost:8000/app/openai/ -H "Content-Type:application/json
 1. copy repo
 2. 建立一個新的 venv ( name: pyvenv )
 3. pip install -r requirements.txt
-4. 
-
+4. manually install torch dependencies:
+```sh
+pip install torch==1.13.1+cu116 torchaudio==0.13.1+cu116 torchvision==0.14.1+cu116 \
+  --extra-index-url https://download.pytorch.org/whl/cu116
+```
+5. create OUTPUT_MODEL dir in `/back_end/app/VITS_files`
+6. check the path in VC_inference.py
+7. build monotonic_align
+```sh
+cd to VITS_files
+git clone https://github.com/resemble-ai/monotonic_align.git
+cd monotonic_align
+python setup.py build_ext --inplace
+```
+8. Run migrateions (If it is first run)
+```sh
+python manage.py makemigrations
+python manage.py migrate
+``` 
+8. check the ChatGPT API Credit
+9. run server
+```sh
+python manage.py runserver
+```

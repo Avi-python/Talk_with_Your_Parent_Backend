@@ -19,6 +19,7 @@ import subprocess
 
 from .VITS_files.text import text_to_sequence, _clean_text
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
+current_dir = os.path.dirname(os.path.abspath(__file__))
 # import logging
 # logging.getLogger("PIL").setLevel(logging.WARNING)
 # logging.getLogger("urllib3").setLevel(logging.WARNING)
@@ -77,10 +78,11 @@ def create_tts_fn(model, hps, speaker_ids, model_name):
                                 length_scale=1.0 / speed)[0][0, 0].data.cpu().float().numpy()
         del stn_tst, x_tst, x_tst_lengths, sid
 
-        path = "D:\\College_things\\College_Program\\Backend\\audio_files\\"
+        audio_dir = os.path.join(current_dir, 'audio_files')
+        os.makedirs(audio_dir, exist_ok=True)
 
-        create_empty_wav(path + f'{model_name}{str(mark)}.wav') # add
-        filename = os.path.join(path, f'{model_name}{str(mark)}.wav')  # 定義文件名 add
+        create_empty_wav(path + f'ppp{str(mark)}.wav') # add
+        filename = os.path.join(path, f'ppp{str(mark)}.wav')  # 定義文件名 add
         sf.write(filename, audio, hps.data.sampling_rate)  # 將音頻寫入文件 add
 
         return "Success", filename # add
@@ -94,6 +96,10 @@ def load_vc_model(model_name):
     global tts_fn
 
     hps = utils.get_hparams_from_file("D:/College_things/College_Program/Backend/back_end/app/VITS_files/OUTPUT_MODEL/" + model_name + "/finetune_speaker.json") # get hparams from config file ( finetune_speaker.json )
+config_path = os.path.join(current_dir, 'VITS_files', 'OUTPUT_MODEL', 'finetune_speaker.json')
+model_path = os.path.join(current_dir, 'VITS_files', 'OUTPUT_MODEL', 'G_latest.pth')
+
+hps = utils.get_hparams_from_file(config_path) # get hparams from config file ( finetune_speaker.json )
 
     net_g = SynthesizerTrn( # 載入模型 
         len(hps.symbols),
@@ -103,6 +109,10 @@ def load_vc_model(model_name):
         **hps.model).to(device)
     _ = net_g.eval()
 
+_ = utils.load_checkpoint(model_path, net_g, None)
+speaker_ids = hps.speakers
+speakers = list(hps.speakers.keys())
+tts_fn = create_tts_fn(net_g, hps, speaker_ids)
     _ = utils.load_checkpoint("D:/College_things/College_Program/Backend/back_end/app/VITS_files/OUTPUT_MODEL/" + model_name + "/G_latest.pth", net_g, None)
     speaker_ids = hps.speakers
     speakers = list(hps.speakers.keys())

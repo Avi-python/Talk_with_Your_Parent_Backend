@@ -17,6 +17,7 @@ import base64
 maximum_tokens = int(os.getenv("MAXIMUM_CONVERSATION_TOKENS", 500))
 encoding = tiktoken.get_encoding("cl100k_base") # for gpt-3.5-turbo and gpt-4
 users_conversation_tokens = {}
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Create your views here.
 # 在前面裝一個 decorator，可以檢查請求是否含有 access token。
@@ -103,8 +104,12 @@ def audio_file(request):
     filename = f'{model_name}{str(mark)}'
     filepath = f'D:\\College_things\\College_Program\\Backend\\audio_files\\{filename}.wav'
     print("DEBUG: filepath: ", filepath)
+    filename = f'ppp{str(mark)}'
+    audio_dir = os.path.join(current_dir, 'audio_files')
+    audio_path = os.path.join(audio_dir, f'{filename}.wav')
+    print("DEBUG: audio_path: ", audio_path)
     times = 0
-    while not os.path.exists(filepath) and times < 5: # TODO 測試這個等待到底有沒有用
+    while not os.path.exists(audio_path) and times < 5: # TODO 測試這個等待到底有沒有用
         time.sleep(1)
         times += 1
         print("DEBUG: wait for audio file, times: ", times)
@@ -112,7 +117,7 @@ def audio_file(request):
     if(times == 5):
         return JsonResponse({"msg": "audio file not found"}, status=404)
     
-    with open(filepath, 'rb') as file:
+    with open(audio_path, 'rb') as file:
         response = HttpResponse(file.read(), content_type='audio/wav') # 使用 HttpResponse 來回傳檔案，不用 FileResponse
         response['Content-Disposition'] = f'attachment; filename="{filename}.wav"'
     
