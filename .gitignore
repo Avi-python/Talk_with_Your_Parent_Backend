@@ -1,4 +1,7 @@
-# Django #
+# audio_files
+audio_files/
+
+# Django
 *.log
 *.pot
 *.pyc
@@ -100,6 +103,7 @@ celerybeat-schedule.*
 # Environments 
 .env 
 .venv 
+venv/
 env/ 
 pyvenv/ 
 ENV/ 
