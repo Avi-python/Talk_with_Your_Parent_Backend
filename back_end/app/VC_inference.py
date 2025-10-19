@@ -63,7 +63,7 @@ def get_text(text, hps, is_symbol):
     text_norm = LongTensor(text_norm)
     return text_norm
 
-def create_tts_fn(model, hps, speaker_ids):
+def create_tts_fn(model, hps, speaker_ids, model_name):
     def tts_fn(text, speaker, language, speed, mark): # 應該就是這個
         if language is not None:
             text = language_marks[language] + text + language_marks[language]
@@ -79,8 +79,8 @@ def create_tts_fn(model, hps, speaker_ids):
 
         path = "D:\\College_things\\College_Program\\Backend\\audio_files\\"
 
-        create_empty_wav(path + f'ppp{str(mark)}.wav') # add
-        filename = os.path.join(path, f'ppp{str(mark)}.wav')  # 定義文件名 add
+        create_empty_wav(path + f'{model_name}{str(mark)}.wav') # add
+        filename = os.path.join(path, f'{model_name}{str(mark)}.wav')  # 定義文件名 add
         sf.write(filename, audio, hps.data.sampling_rate)  # 將音頻寫入文件 add
 
         return "Success", filename # add
@@ -88,27 +88,34 @@ def create_tts_fn(model, hps, speaker_ids):
 
     return tts_fn
 
-hps = utils.get_hparams_from_file("D:/College_things/College_Program/Backend/back_end/app/VITS_files/OUTPUT_MODEL/finetune_speaker.json") # get hparams from config file ( finetune_speaker.json )
+tts_fn = None
 
-net_g = SynthesizerTrn( # 載入模型 
-    len(hps.symbols),
-    hps.data.filter_length // 2 + 1,
-    hps.train.segment_size // hps.data.hop_length,
-    n_speakers=hps.data.n_speakers,
-    **hps.model).to(device)
-_ = net_g.eval()
+def load_vc_model(model_name):
+    global tts_fn
 
-_ = utils.load_checkpoint("D:/College_things/College_Program/Backend/back_end/app/VITS_files/OUTPUT_MODEL/G_latest.pth", net_g, None)
-speaker_ids = hps.speakers
-speakers = list(hps.speakers.keys())
-tts_fn = create_tts_fn(net_g, hps, speaker_ids)
+    hps = utils.get_hparams_from_file("D:/College_things/College_Program/Backend/back_end/app/VITS_files/OUTPUT_MODEL/" + model_name + "/finetune_speaker.json") # get hparams from config file ( finetune_speaker.json )
 
-def vc_fn(text, mark):
-    filename = tts_fn(text, "PPP", "简体中文", 1, mark)
+    net_g = SynthesizerTrn( # 載入模型 
+        len(hps.symbols),
+        hps.data.filter_length // 2 + 1,
+        hps.train.segment_size // hps.data.hop_length,
+        n_speakers=hps.data.n_speakers,
+        **hps.model).to(device)
+    _ = net_g.eval()
+
+    _ = utils.load_checkpoint("D:/College_things/College_Program/Backend/back_end/app/VITS_files/OUTPUT_MODEL/" + model_name + "/G_latest.pth", net_g, None)
+    speaker_ids = hps.speakers
+    speakers = list(hps.speakers.keys())
+    tts_fn = create_tts_fn(net_g, hps, speaker_ids, model_name)
+
+    # 先跑一次
+    tts_fn("初始化中", model_name, "简体中文", 1, "_init")
+
+def vc_fn(text, mark, model_name):
+    global tts_fn
+    filename = tts_fn(text, model_name, "简体中文", 1, mark)
     print(filename)
 
-# 先跑一次
-tts_fn("初始化中", "PPP", "简体中文", 1, "_init")
 
 
 

@@ -91,6 +91,11 @@ curl -X POST http://localhost:8000/app/openai/ -H "Content-Type:application/json
 - 發現的 feature
   - 如果使用同一個 chrome 瀏覽器帳號，可能是因為 localstorage 的關係，使用者會相同。
 
+## 更換聲線
+- 李登輝 : ddd
+- 柯文哲 : ppp
+- 賴清德 : ra
+
 
 # 之後打開方式
 1. copy repo
